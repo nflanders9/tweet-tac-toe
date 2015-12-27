@@ -7,6 +7,8 @@ Twitter bot that plays Tic-Tac-Toe through tweets and replies
 __author__ = 'Nick Flanders'
 from enum import Enum
 import sys
+import math
+import random
 
 class GamePiece(Enum):
     """
@@ -132,9 +134,9 @@ class GameModel:
             new_state = GameModel(board=self._do_move(*move), turn=self._get_opponent())
             scores.append(new_state.minimax_values(0))
         if self.turn == GamePiece.X:
-            return moves[scores.index(max(scores))]
+            return moves[random_index(scores, max(scores))]
         else:
-            return moves[scores.index(min(scores))]
+            return moves[random_index(scores, min(scores))]
 
 
     def minimax_values(self, depth):
@@ -189,13 +191,64 @@ class GameModel:
             output += "\n"
         return output
 
+    @classmethod
+    def parse_board(cls, board_str):
+        """
+        Create a new game based on the given ASCII board
+        :return:    a GameModel based on the given ASCII board
+        """
+        board_str = board_str.replace("[]", "[ ]").replace("[", "").replace("]", "").replace("\n", "")
+        size = int(math.sqrt(len(board_str)))
+        board = []
+        num_x = 0
+        num_o = 0
+        for col in range(size):
+            board.append([])
+            for row in range(size):
+                character = board_str[col + 3 * row].upper()
+                if character == "X":
+                    board[col].append(GamePiece.X)
+                    num_x += 1
+                elif character == "O":
+                    board[col].append(GamePiece.O)
+                    num_o += 1
+                elif character == " ":
+                    board[col].append(GamePiece.EMPTY)
+                else:
+                    print(character)
+        if abs(num_o - num_x) > 1:
+            raise ValueError("invalid board string")
+        turn = GamePiece.X if num_x <= num_o else GamePiece.O
+        return GameModel(board=board, turn=turn)
 
-# test for the minimax search algorithm
-game = GameModel()
-game.board = game._do_move(0, 0)
-game.turn = game._get_opponent()
-print(game)
-while not game.game_over():
-    game.board = game._do_move(*(game.get_best_move()))
-    game.turn = game._get_opponent()
+def random_index(list, obj):
+    """
+    Return the index of a random occurrence of the given object in the given list
+    :param list: list that contains the given object
+    :param obj:  object to search for in the list
+    :return:     int index of the object in the list
+    """
+    temp = [item for item in list]
+    if obj not in list:
+        raise IndexError("given value not in list")
+    else:
+        occurrences = temp.count(obj)
+        if occurrences == 1:
+            return list.index(obj)
+        occurrence = random.randint(0, temp.count(obj) - 2)
+        for _ in range(occurrence):
+            temp.remove(obj)
+            temp = [0] + temp
+        return temp.index(obj)
+
+
+if __name__ == "__main__":
+    # test for the minimax search algorithm
+    game = GameModel.parse_board(
+    "[][ ][]\n[][][]\n[][][]"
+    )
     print(game)
+    while not game.game_over():
+        game.board = game._do_move(*(game.get_best_move()))
+        game.turn = game._get_opponent()
+        print(game)

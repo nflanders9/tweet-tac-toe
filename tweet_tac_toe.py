@@ -1,5 +1,5 @@
 """
-tic-tac-tweet.py
+tweet_tac_toe.py
 Nick Flanders
 
 Twitter bot that plays Tic-Tac-Toe through tweets and replies
@@ -130,6 +130,8 @@ class GameModel:
             return None
         moves = self._get_open_spots()
         scores = []
+        if len(moves) == len(self.board) ** 2:
+            return random.randint(0, len(self.board) - 1), random.randint(0, len(self.board) - 1)
         for move in moves:
             new_state = GameModel(board=self._do_move(*move), turn=self._get_opponent())
             scores.append(new_state.minimax_values(0))
@@ -191,17 +193,30 @@ class GameModel:
             output += "\n"
         return output
 
+    def play(self):
+        """
+        Play one turn in the current game
+        :return: this GameModel
+        """
+        self.board = self._do_move(*(self.get_best_move()))
+        self.turn = self._get_opponent()
+        return self
+
+
     @classmethod
     def parse_board(cls, board_str):
         """
         Create a new game based on the given ASCII board
         :return:    a GameModel based on the given ASCII board
         """
+        while "  " in board_str:
+            board_str = board_str.replace("  ", " ")
         board_str = board_str.replace("[]", "[ ]").replace("[", "").replace("]", "").replace("\n", "")
         size = int(math.sqrt(len(board_str)))
         board = []
         num_x = 0
         num_o = 0
+        print(board_str)
         for col in range(size):
             board.append([])
             for row in range(size):

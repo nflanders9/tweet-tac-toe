@@ -131,6 +131,7 @@ class GameModel:
         moves = self._get_open_spots()
         scores = []
         if len(moves) == len(self.board) ** 2:
+            print("RANDOM START")
             return random.randint(0, len(self.board) - 1), random.randint(0, len(self.board) - 1)
         for move in moves:
             new_state = GameModel(board=self._do_move(*move), turn=self._get_opponent())
@@ -186,9 +187,9 @@ class GameModel:
         for row_index in range(len(self.board)):
             for col_index in range(len(self.board)):
                 if self.board[col_index][row_index] == GamePiece.EMPTY:
-                    piece = " "
+                    piece = "  "
                 else:
-                    piece = self.board[col_index][row_index].name
+                    piece = self.board[col_index][row_index].name.lower()
                 output += "[" + piece + "]"
             output += "\n"
         return output
@@ -209,10 +210,19 @@ class GameModel:
         Create a new game based on the given ASCII board
         :return:    a GameModel based on the given ASCII board
         """
+        board_str = board_str.lower()
         while "  " in board_str:
             board_str = board_str.replace("  ", " ")
+
+        # sanitize the board inputs
+        board_str = board_str.replace("[ x]", "[x]").replace("[x ]", "[x]").replace("[ o]", "[o]").replace("[o ]", "[o]")
+        board_str = board_str.replace("[ x ]", "[x]").replace("[ o ]", "[o]")
+        board_str = board_str.replace("[  x]", "[x]").replace("[x  ]", "[x]").replace("[  o]", "[o]").replace("[o  ]", "[o]")
         board_str = board_str.replace("[]", "[ ]").replace("[", "").replace("]", "").replace("\n", "")
+
         size = int(math.sqrt(len(board_str)))
+        if size ** 2 != len(board_str):
+            raise ValueError("unable to parse board string")
         board = []
         num_x = 0
         num_o = 0

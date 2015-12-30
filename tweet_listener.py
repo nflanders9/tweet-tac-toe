@@ -74,6 +74,5 @@ while True:
     if len(results['statuses']) > 0:
         last_id.update({"last_id": since_id}, {"last_id": results["statuses"][0]["id"]})
 
-    break
     time.sleep(10)
-client.close()
+
